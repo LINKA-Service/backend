@@ -1,7 +1,9 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
+from datetime import datetime, timezone
+
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Text
 from sqlalchemy.orm import relationship
-from datetime import datetime
-from ..database import Base
+
+from app.db.database import Base
 
 
 class Message(Base):
@@ -9,11 +11,20 @@ class Message(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     content = Column(Text, nullable=False)
-    channel_id = Column(Integer, ForeignKey('channels.id', ondelete='CASCADE'), nullable=False)
-    author_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    group_id = Column(
+        Integer, ForeignKey("groups.id", ondelete="CASCADE"), nullable=False
+    )
+    author_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    created_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
 
-    # Relationships
-    channel = relationship("Channel", back_populates="messages")
+    group = relationship("Group", back_populates="messages")
     author = relationship("User", back_populates="messages")

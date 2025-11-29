@@ -1,14 +1,15 @@
-from sqlalchemy import Column, Integer, String, DateTime, Table, ForeignKey
-from sqlalchemy.orm import relationship
-from datetime import datetime
-from ..database import Base
+from datetime import datetime, timezone
 
-# User-Server Many-to-Many relationship
-user_servers = Table(
-    'user_servers',
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Table
+from sqlalchemy.orm import relationship
+
+from app.db.database import Base
+
+user_groups = Table(
+    "user_groups",
     Base.metadata,
-    Column('user_id', Integer, ForeignKey('users.id', ondelete='CASCADE')),
-    Column('server_id', Integer, ForeignKey('servers.id', ondelete='CASCADE'))
+    Column("user_id", Integer, ForeignKey("users.id", ondelete="CASCADE")),
+    Column("group_id", Integer, ForeignKey("groups.id", ondelete="CASCADE")),
 )
 
 
@@ -22,10 +23,17 @@ class User(Base):
     display_name = Column(String, nullable=True)
     bio = Column(String, nullable=True)
     avatar_url = Column(String, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
 
-    # Relationships
-    servers = relationship("Server", secondary=user_servers, back_populates="members")
-    owned_servers = relationship("Server", back_populates="owner")
-    messages = relationship("Message", back_populates="author", cascade="all, delete-orphan")
+    groups = relationship("Group", secondary=user_groups, back_populates="members")
+    owned_groups = relationship("Group", back_populates="owner")
+    messages = relationship(
+        "Message", back_populates="author", cascade="all, delete-orphan"
+    )

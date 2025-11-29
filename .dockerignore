@@ -1,5 +1,6 @@
 # UV virtual environment
 .venv/
+uv.lock
 
 # Python compiled files and caches
 __pycache__/

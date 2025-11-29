@@ -1,5 +1,6 @@
-from pydantic import BaseModel
 from datetime import datetime
+
+from pydantic import BaseModel
 
 
 class MessageBase(BaseModel):
@@ -7,12 +8,12 @@ class MessageBase(BaseModel):
 
 
 class MessageCreate(MessageBase):
-    channel_id: int
+    group_id: int
 
 
 class MessageResponse(MessageBase):
     id: int
-    channel_id: int
+    group_id: int
     author_id: int
     created_at: datetime
     updated_at: datetime
@@ -23,6 +24,5 @@ class MessageResponse(MessageBase):
 
 class MessageWithAuthor(MessageResponse):
     author_username: str
-
-    class Config:
-        from_attributes = True
+    author_display_name: str
+    author_avatar_url: str

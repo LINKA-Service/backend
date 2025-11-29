@@ -1,6 +1,7 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
 from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel, EmailStr
 
 
 class UserBase(BaseModel):
@@ -11,9 +12,7 @@ class UserBase(BaseModel):
     avatar_url: Optional[str] = None
 
 
-class UserCreate(BaseModel):
-    username: str
-    email: EmailStr
+class UserCreate(UserBase):
     password: str
 
 
@@ -21,26 +20,15 @@ class UserUpdate(BaseModel):
     display_name: Optional[str] = None
     bio: Optional[str] = None
     avatar_url: Optional[str] = None
-    password: Optional[str] = None
 
 
-class UserResponse(BaseModel):
+class UserResponse(UserBase):
     id: int
-    username: str
-    email: EmailStr
-    display_name: Optional[str]
-    bio: Optional[str]
-    avatar_url: Optional[str]
     created_at: datetime
     updated_at: datetime
 
     class Config:
         from_attributes = True
-
-
-class UserLogin(BaseModel):
-    username: str
-    password: str
 
 
 class Token(BaseModel):
@@ -49,4 +37,4 @@ class Token(BaseModel):
 
 
 class TokenData(BaseModel):
-    username: Optional[str] = None
+    user_id: Optional[int] = None
