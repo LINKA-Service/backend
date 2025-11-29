@@ -11,21 +11,21 @@ from app.services.group_service import GroupService
 router = APIRouter()
 
 
-@router.post("/", response_model=GroupResponse)
-async def create_new_group(
-    group: GroupCreate,
-    current_user: User = Depends(get_current_user),
-    group_service: GroupService = Depends(get_group_service),
-):
-    return group_service.create_group(group, current_user.id)
-
-
 @router.get("/", response_model=List[GroupResponse])
 async def list_my_groups(
     current_user: User = Depends(get_current_user),
     group_service: GroupService = Depends(get_group_service),
 ):
     return group_service.get_user_groups(current_user.id)
+
+
+@router.post("/create", response_model=GroupResponse)
+async def create_new_group(
+    group: GroupCreate,
+    current_user: User = Depends(get_current_user),
+    group_service: GroupService = Depends(get_group_service),
+):
+    return group_service.create_group(group, current_user.id)
 
 
 @router.get("/{group_id}", response_model=GroupResponse)

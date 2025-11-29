@@ -18,7 +18,6 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True, nullable=False)
-    email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     display_name = Column(String, nullable=True)
     bio = Column(String, nullable=True)
@@ -33,7 +32,9 @@ class User(Base):
     )
 
     groups = relationship("Group", secondary=user_groups, back_populates="members")
-    owned_groups = relationship("Group", back_populates="owner")
+    owned_groups = relationship(
+        "Group", back_populates="owner", cascade="all, delete-orphan"
+    )
     messages = relationship(
         "Message", back_populates="author", cascade="all, delete-orphan"
     )
