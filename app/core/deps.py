@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.exceptions import UnauthorizedException
 from app.db.database import get_db
+from app.db.redis import is_blacklisted
 from app.models.user import User
 from app.services.auth_service import AuthService
 from app.services.group_service import GroupService
@@ -36,6 +37,9 @@ def get_message_service(db: Session = Depends(get_db)) -> MessageService:
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)], db: Session = Depends(get_db)
 ) -> User:
+    if await is_blacklisted(token):
+        raise UnauthorizedException("Token has been revoked")
+
     try:
         payload = jwt.decode(
             token, settings.secret_key, algorithms=[settings.algorithm]

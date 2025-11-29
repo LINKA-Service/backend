@@ -6,6 +6,7 @@ from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.exceptions import UnauthorizedException
 from app.models.user import User
 from app.schemas.user import UserCreate
 
@@ -57,3 +58,19 @@ class AuthService:
         self.db.commit()
         self.db.refresh(db_user)
         return db_user
+
+    def change_password(
+        self, user_id: int, current_password: str, new_password: str
+    ) -> bool:
+        user = self.db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise UnauthorizedException("User not found")
+
+        if not self.verify_password(current_password, user.hashed_password):
+            raise UnauthorizedException("Current password is incorrect")
+
+        user.hashed_password = self.get_password_hash(new_password)
+        user.password_changed_at = datetime.now(timezone.utc)
+
+        self.db.commit()
+        return True

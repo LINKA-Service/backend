@@ -45,3 +45,41 @@ async def login(
         data={"sub": str(user.id)}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.post("/change-password", response_model=MessageResponse)
+async def change_password(
+    password_data: PasswordChange,
+    current_user: User = Depends(get_current_user),
+    auth_service: AuthService = Depends(get_auth_service),
+):
+    auth_service.change_password(
+        user_id=current_user.id,
+        current_password=password_data.current_password,
+        new_password=password_data.new_password,
+    )
+    return {"message": "Password changed successfully"}
+
+
+@router.post("/logout", response_model=MessageResponse)
+async def logout(
+    token: Annotated[str, Depends(oauth2_scheme)],
+):
+    redis_client = get_redis_client()
+
+    try:
+        payload = jwt.decode(
+            token, settings.secret_key, algorithms=[settings.algorithm]
+        )
+        exp = payload.get("exp")
+        now = datetime.now(timezone.utc).timestamp()
+        expires_in = (
+            int(exp - now) if exp else settings.access_token_expire_minutes * 60
+        )
+
+        redis_client.add_to_blacklist(token, expires_in)
+
+    except Exception:
+        pass
+
+    return {"message": "Successfully logged out"}
