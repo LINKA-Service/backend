@@ -38,3 +38,4 @@ class User(Base):
     messages = relationship(
         "Message", back_populates="author", cascade="all, delete-orphan"
     )
+    cases = relationship("Case", back_populates="user", cascade="all, delete-orphan")
