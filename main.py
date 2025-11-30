@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import auth, groups, messages, users, websocket
+from app.api import auth, groups, users, websocket
 from app.db.redis import close_redis, get_redis
 
 

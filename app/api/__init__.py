@@ -1,3 +1,3 @@
-from app.api import auth, groups, messages, users
+from . import auth, groups, users
 
-__all__ = ["auth", "users", "groups", "messages"]
+__all__ = ["auth", "users", "groups"]
