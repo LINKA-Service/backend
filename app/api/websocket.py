@@ -10,7 +10,6 @@ from app.db.database import get_db
 from app.models.user import User
 from app.schemas.message import MessageCreate
 from app.services.group_service import GroupService
-from app.services.message_service import MessageService
 from app.services.websocket_service import manager
 
 router = APIRouter()
@@ -59,8 +58,7 @@ async def websocket_endpoint(
                 content=message_data.get("content"), group_id=group_id
             )
 
-            message_service = MessageService(db)
-            db_message = message_service.create_message(message_create, user.id)
+            db_message = group_service.create_message(message_create, user.id)
 
             response = {
                 "id": db_message.id,

@@ -1,6 +1,7 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.sql.annotation import Annotated
 
 from app.core.deps import get_current_user, get_user_service
 from app.core.exceptions import ConflictException, NotFoundException
