@@ -12,7 +12,6 @@ from app.db.redis import is_blacklisted
 from app.models.user import User
 from app.services.auth_service import AuthService
 from app.services.group_service import GroupService
-from app.services.message_service import MessageService
 from app.services.user_service import UserService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
@@ -28,10 +27,6 @@ def get_user_service(db: Session = Depends(get_db)) -> UserService:
 
 def get_group_service(db: Session = Depends(get_db)) -> GroupService:
     return GroupService(db)
-
-
-def get_message_service(db: Session = Depends(get_db)) -> MessageService:
-    return MessageService(db)
 
 
 async def get_current_user(
