@@ -3,7 +3,7 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import ForbiddenException, NotFoundException
-from app.models.message import Message
+from app.models.group import GroupMessage
 from app.schemas.message import MessageCreate
 
 
@@ -11,8 +11,8 @@ class MessageService:
     def __init__(self, db: Session):
         self.db = db
 
-    def create_message(self, message: MessageCreate, author_id: int) -> Message:
-        db_message = Message(
+    def create_message(self, message: MessageCreate, author_id: int) -> GroupMessage:
+        db_message = GroupMessage(
             content=message.content, group_id=message.group_id, author_id=author_id
         )
         self.db.add(db_message)
@@ -22,18 +22,20 @@ class MessageService:
 
     def get_group_messages(
         self, group_id: int, skip: int = 0, limit: int = 50
-    ) -> List[Message]:
+    ) -> List[GroupMessage]:
         return (
-            self.db.query(Message)
-            .filter(Message.group_id == group_id)
-            .order_by(Message.created_at.desc())
+            self.db.query(GroupMessage)
+            .filter(GroupMessage.group_id == group_id)
+            .order_by(GroupMessage.created_at.desc())
             .offset(skip)
             .limit(limit)
             .all()
         )
 
     def delete_message(self, message_id: int, user_id: int) -> None:
-        db_message = self.db.query(Message).filter(Message.id == message_id).first()
+        db_message = (
+            self.db.query(GroupMessage).filter(GroupMessage.id == message_id).first()
+        )
         if not db_message:
             raise NotFoundException("Message not found")
 
