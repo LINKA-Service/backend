@@ -3,9 +3,10 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import ForbiddenException, NotFoundException
-from app.models.group import Group
+from app.models.group import Group, GroupMessage
 from app.models.user import User
 from app.schemas.group import GroupCreate, GroupUpdate
+from app.schemas.message import MessageCreate
 
 
 class GroupService:
@@ -104,3 +105,37 @@ class GroupService:
 
         user = self.db.query(User).filter(User.id == user_id).first()
         return user in db_group.members
+
+    def create_message(self, message: MessageCreate, author_id: int) -> GroupMessage:
+        db_message = GroupMessage(
+            content=message.content, group_id=message.group_id, author_id=author_id
+        )
+        self.db.add(db_message)
+        self.db.commit()
+        self.db.refresh(db_message)
+        return db_message
+
+    def get_group_messages(
+        self, group_id: int, skip: int = 0, limit: int = 50
+    ) -> List[GroupMessage]:
+        return (
+            self.db.query(GroupMessage)
+            .filter(GroupMessage.group_id == group_id)
+            .order_by(GroupMessage.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+
+    def delete_message(self, message_id: int, user_id: int) -> None:
+        db_message = (
+            self.db.query(GroupMessage).filter(GroupMessage.id == message_id).first()
+        )
+        if not db_message:
+            raise NotFoundException("Message not found")
+
+        if db_message.author_id != user_id:
+            raise ForbiddenException("Can only delete own messages")
+
+        self.db.delete(db_message)
+        self.db.commit()
