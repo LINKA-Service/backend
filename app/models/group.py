@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 from app.db.database import Base
@@ -31,6 +31,9 @@ class Group(Base):
     messages = relationship(
         "GroupMessage", back_populates="group", cascade="all, delete-orphan"
     )
+    consultations = relationship(
+        "Consultation", back_populates="group", cascade="all, delete-orphan"
+    )
 
 
 class GroupMessage(Base):
@@ -38,6 +41,7 @@ class GroupMessage(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     content = Column(Text, nullable=False)
+    is_evidence = Column(Boolean, default=False)
     group_id = Column(
         Integer, ForeignKey("groups.id", ondelete="CASCADE"), nullable=False
     )

@@ -40,3 +40,9 @@ class User(Base):
         "GroupMessage", back_populates="author", cascade="all, delete-orphan"
     )
     cases = relationship("Case", back_populates="user", cascade="all, delete-orphan")
+    consultations = relationship(
+        "Consultation", back_populates="author", cascade="all, delete-orphan"
+    )
+    consultation_messages = relationship(
+        "ConsultationMessage", back_populates="author", cascade="all, delete-orphan"
+    )
