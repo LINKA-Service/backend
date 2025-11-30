@@ -47,5 +47,5 @@ class PasswordChange(BaseModel):
     new_password: str
 
 
-class MessageResponse(BaseModel):
+class StatusResponse(BaseModel):
     message: str

@@ -12,8 +12,8 @@ from app.core.exceptions import ConflictException, UnauthorizedException
 from app.db.redis import add_to_blacklist
 from app.models import User
 from app.schemas.user import (
-    MessageResponse,
     PasswordChange,
+    StatusResponse,
     Token,
     UserCreate,
     UserResponse,
@@ -53,7 +53,7 @@ async def login(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.post("/logout", response_model=MessageResponse)
+@router.post("/logout", response_model=StatusResponse)
 async def logout(
     token: Annotated[str, Depends(oauth2_scheme)],
     current_user: Annotated[User, Depends(get_current_user)],
@@ -78,7 +78,7 @@ async def logout(
     return {"message": "Successfully logged out"}
 
 
-@router.post("/change-password", response_model=MessageResponse)
+@router.post("/change-password", response_model=StatusResponse)
 async def change_password(
     password_data: PasswordChange,
     current_user: Annotated[User, Depends(get_current_user)],
