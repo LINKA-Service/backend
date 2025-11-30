@@ -44,8 +44,8 @@ class TokenData(BaseModel):
 
 
 class PasswordChange(BaseModel):
-    current_password: str = Field(..., min_length=1)
-    new_password: str = Field(..., min_length=8)
+    current_password: str
+    new_password: str
 
 
 class MessageResponse(BaseModel):
