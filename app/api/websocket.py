@@ -1,4 +1,5 @@
 import json
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
 from jose import JWTError, jwt
@@ -34,8 +35,8 @@ async def get_user_from_token(token: str, db: Session) -> User:
 async def websocket_endpoint(
     websocket: WebSocket,
     group_id: int,
-    token: str = Query(...),
-    db: Session = Depends(get_db),
+    token: Annotated[str, Query(...)],
+    db: Annotated[Session, Depends(get_db)],
 ):
     user = await get_user_from_token(token, db)
     if not user:

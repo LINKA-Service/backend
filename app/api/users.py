@@ -44,7 +44,6 @@ async def change_username(
     user_service: Annotated[UserService, Depends(get_user_service)],
 ):
     try:
-        user_service.update_username(current_user.id, username_update)
-        return {"message": "Username changed successfully"}
+        return user_service.update_username(current_user.id, username_update)
     except IntegrityError:
         raise ConflictException("Username already registered")

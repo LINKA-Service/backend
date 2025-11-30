@@ -1,4 +1,4 @@
-from typing import List
+from typing import Annotated, List
 
 from fastapi import APIRouter, Depends
 
@@ -13,8 +13,8 @@ router = APIRouter()
 
 @router.get("/", response_model=List[GroupResponse])
 async def list_my_groups(
-    current_user: User = Depends(get_current_user),
-    group_service: GroupService = Depends(get_group_service),
+    current_user: Annotated[User, Depends(get_current_user)],
+    group_service: Annotated[GroupService, Depends(get_group_service)],
 ):
     return group_service.get_user_groups(current_user.id)
 
@@ -22,8 +22,8 @@ async def list_my_groups(
 @router.post("/create", response_model=GroupResponse)
 async def create_new_group(
     group: GroupCreate,
-    current_user: User = Depends(get_current_user),
-    group_service: GroupService = Depends(get_group_service),
+    current_user: Annotated[User, Depends(get_current_user)],
+    group_service: Annotated[GroupService, Depends(get_group_service)],
 ):
     return group_service.create_group(group, current_user.id)
 
@@ -31,8 +31,8 @@ async def create_new_group(
 @router.get("/{group_id}", response_model=GroupResponse)
 async def get_group_detail(
     group_id: int,
-    current_user: User = Depends(get_current_user),
-    group_service: GroupService = Depends(get_group_service),
+    current_user: Annotated[User, Depends(get_current_user)],
+    group_service: Annotated[GroupService, Depends(get_group_service)],
 ):
     group = group_service.get_group(group_id)
     if not group:
@@ -44,8 +44,8 @@ async def get_group_detail(
 async def update_group_detail(
     group_id: int,
     group_update: GroupUpdate,
-    current_user: User = Depends(get_current_user),
-    group_service: GroupService = Depends(get_group_service),
+    current_user: Annotated[User, Depends(get_current_user)],
+    group_service: Annotated[GroupService, Depends(get_group_service)],
 ):
     return group_service.update_group(group_id, group_update, current_user.id)
 
@@ -53,8 +53,8 @@ async def update_group_detail(
 @router.delete("/{group_id}")
 async def delete_group_by_id(
     group_id: int,
-    current_user: User = Depends(get_current_user),
-    group_service: GroupService = Depends(get_group_service),
+    current_user: Annotated[User, Depends(get_current_user)],
+    group_service: Annotated[GroupService, Depends(get_group_service)],
 ):
     group_service.delete_group(group_id, current_user.id)
     return {"message": "Group deleted successfully"}
@@ -63,8 +63,8 @@ async def delete_group_by_id(
 @router.post("/{group_id}/join", response_model=GroupResponse)
 async def join_group_by_id(
     group_id: int,
-    current_user: User = Depends(get_current_user),
-    group_service: GroupService = Depends(get_group_service),
+    current_user: Annotated[User, Depends(get_current_user)],
+    group_service: Annotated[GroupService, Depends(get_group_service)],
 ):
     return group_service.join_group(group_id, current_user.id)
 
@@ -72,8 +72,8 @@ async def join_group_by_id(
 @router.post("/{group_id}/leave")
 async def leave_group_by_id(
     group_id: int,
-    current_user: User = Depends(get_current_user),
-    group_service: GroupService = Depends(get_group_service),
+    current_user: Annotated[User, Depends(get_current_user)],
+    group_service: Annotated[GroupService, Depends(get_group_service)],
 ):
     group_service.leave_group(group_id, current_user.id)
     return {"message": "Left group successfully"}

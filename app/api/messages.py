@@ -1,4 +1,4 @@
-from typing import List
+from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, Query
 
@@ -15,9 +15,9 @@ router = APIRouter()
 @router.post("/", response_model=MessageResponse)
 async def create_new_message(
     message: MessageCreate,
-    current_user: User = Depends(get_current_user),
-    message_service: MessageService = Depends(get_message_service),
-    group_service: GroupService = Depends(get_group_service),
+    current_user: Annotated[User, Depends(get_current_user)],
+    message_service: Annotated[MessageService, Depends(get_message_service)],
+    group_service: Annotated[GroupService, Depends(get_group_service)],
 ):
     if not group_service.is_group_member(message.group_id, current_user.id):
         raise ForbiddenException("Not a member of this group")
@@ -30,9 +30,9 @@ async def get_messages(
     group_id: int,
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
-    current_user: User = Depends(get_current_user),
-    message_service: MessageService = Depends(get_message_service),
-    group_service: GroupService = Depends(get_group_service),
+    current_user: Annotated[User, Depends(get_current_user)],
+    message_service: Annotated[MessageService, Depends(get_message_service)],
+    group_service: Annotated[GroupService, Depends(get_group_service)],
 ):
     if not group_service.is_group_member(group_id, current_user.id):
         raise ForbiddenException("Not a member of this group")
@@ -43,8 +43,8 @@ async def get_messages(
 @router.delete("/{message_id}")
 async def delete_message_by_id(
     message_id: int,
-    current_user: User = Depends(get_current_user),
-    message_service: MessageService = Depends(get_message_service),
+    current_user: Annotated[User, Depends(get_current_user)],
+    message_service: Annotated[MessageService, Depends(get_message_service)],
 ):
     message_service.delete_message(message_id, current_user.id)
     return {"message": "Message deleted successfully"}
