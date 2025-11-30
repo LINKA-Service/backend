@@ -29,5 +29,29 @@ class Group(Base):
     owner = relationship("User", back_populates="owned_groups")
     members = relationship("User", secondary=user_groups, back_populates="groups")
     messages = relationship(
-        "Message", back_populates="group", cascade="all, delete-orphan"
+        "GroupMessage", back_populates="group", cascade="all, delete-orphan"
     )
+
+
+class GroupMessage(Base):
+    __tablename__ = "group_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    content = Column(Text, nullable=False)
+    group_id = Column(
+        Integer, ForeignKey("groups.id", ondelete="CASCADE"), nullable=False
+    )
+    author_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    created_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
+
+    group = relationship("Group", back_populates="messages")
+    author = relationship("User", back_populates="group_messages")

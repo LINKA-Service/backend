@@ -1,35 +1,50 @@
 from fastapi import APIRouter, Depends
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.sql.annotation import Annotated
 
 from app.core.deps import get_current_user, get_user_service
-from app.core.exceptions import NotFoundException
+from app.core.exceptions import ConflictException, NotFoundException
 from app.models.user import User
-from app.schemas.user import UserResponse, UserUpdate
+from app.schemas.user import ProfileUpdate, UsernameUpdate, UserResponse
 from app.services.user_service import UserService
 
 router = APIRouter()
 
 
 @router.get("/me", response_model=UserResponse)
-async def get_me(current_user: User = Depends(get_current_user)):
+async def get_me(current_user: Annotated[User, Depends(get_current_user)]):
     return current_user
 
 
 @router.put("/me", response_model=UserResponse)
 async def update_me(
-    user_update: UserUpdate,
-    current_user: User = Depends(get_current_user),
-    user_service: UserService = Depends(get_user_service),
+    profile_update: ProfileUpdate,
+    current_user: Annotated[User, Depends(get_current_user)],
+    user_service: Annotated[UserService, Depends(get_user_service)],
 ):
-    return user_service.update_user(current_user.id, user_update)
+    return user_service.update_profile(current_user.id, profile_update)
 
 
-@router.get("/{user_id}", response_model=UserResponse)
-async def get_user_by_id(
-    user_id: int,
-    current_user: User = Depends(get_current_user),
-    user_service: UserService = Depends(get_user_service),
+@router.get("/{username}", response_model=UserResponse)
+async def get_user_by_username(
+    username: str,
+    current_user: Annotated[User, Depends(get_current_user)],
+    user_service: Annotated[UserService, Depends(get_user_service)],
 ):
-    user = user_service.get_user(user_id)
+    user = user_service.get_user_by_username(username)
     if not user:
         raise NotFoundException("User not found")
     return user
+
+
+@router.post("/change-username", response_model=UserResponse)
+async def change_username(
+    username_update: UsernameUpdate,
+    current_user: Annotated[User, Depends(get_current_user)],
+    user_service: Annotated[UserService, Depends(get_user_service)],
+):
+    try:
+        user_service.update_username(current_user.id, username_update)
+        return {"message": "Username changed successfully"}
+    except IntegrityError:
+        raise ConflictException("Username already registered")
