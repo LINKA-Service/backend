@@ -25,6 +25,8 @@ class GroupService:
         self.db.refresh(db_group)
 
         owner = self.db.query(User).filter(User.id == owner_id).first()
+        if not owner:
+            raise NotFoundException("Owner user not found")
         db_group.members.append(owner)
         self.db.commit()
         self.db.refresh(db_group)
@@ -75,6 +77,8 @@ class GroupService:
             raise NotFoundException("Group not found")
 
         user = self.db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise NotFoundException("User not found")
         if user in db_group.members:
             raise ForbiddenException("Already a member")
 
@@ -92,6 +96,8 @@ class GroupService:
             raise ForbiddenException("Owner cannot leave group")
 
         user = self.db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise NotFoundException("User not found")
         if user not in db_group.members:
             raise ForbiddenException("Not a member")
 
@@ -104,6 +110,8 @@ class GroupService:
             return False
 
         user = self.db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return False
         return user in db_group.members
 
     def create_message(self, message: MessageCreate, author_id: int) -> GroupMessage:
