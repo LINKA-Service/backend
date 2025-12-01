@@ -7,10 +7,10 @@ from app.core.deps import get_current_lawyer, get_lawyer_service
 from app.core.exceptions import ConflictException, NotFoundException
 from app.models.lawyer import Lawyer
 from app.schemas.lawyer import (
+    LawyerNameUpdate,
     LawyerResponse,
     LawyerReviewCreate,
     LawyerReviewResponse,
-    LawyernameUpdate,
     ProfileUpdate,
 )
 from app.services.lawyer_service import LawyerService
@@ -45,14 +45,12 @@ async def get_lawyer_by_lawyername(
 
 @router.post("/change-lawyername", response_model=LawyerResponse)
 async def change_lawyername(
-    lawyername_update: LawyernameUpdate,
+    lawyername_update: LawyerNameUpdate,
     current_lawyer: Annotated[Lawyer, Depends(get_current_lawyer)],
     lawyer_service: Annotated[LawyerService, Depends(get_lawyer_service)],
 ):
     try:
-        return lawyer_service.update_lawyername(
-            current_lawyer.id, lawyername_update
-        )
+        return lawyer_service.update_lawyername(current_lawyer.id, lawyername_update)
     except IntegrityError:
         raise ConflictException("Lawyername already registered")
 
