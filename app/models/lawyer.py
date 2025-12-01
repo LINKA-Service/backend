@@ -1,7 +1,6 @@
-import enum
 from datetime import datetime, timezone
 
-from sqlalchemy import ARRAY, Column, DateTime, ForeignKey, Integer, String, Table
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Table
 from sqlalchemy.orm import relationship
 
 from app.db.database import Base
