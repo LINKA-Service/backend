@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from app.core.deps import get_current_lawyer, get_current_user, get_lawyer_service
 from app.core.exceptions import ConflictException, NotFoundException
 from app.models.lawyer import Lawyer
+from app.models.user import User
 from app.schemas.lawyer import (
     LawyerNameUpdate,
     LawyerResponse,
@@ -33,11 +34,11 @@ async def update_me(
 
 
 @router.get("/{username}", response_model=LawyerResponse)
-async def get_lawyer_by_lawyername(
+async def get_lawyer_by_username(
     username: str,
     lawyer_service: Annotated[LawyerService, Depends(get_lawyer_service)],
 ):
-    lawyer = lawyer_service.get_lawyer_by_lawyername(username)
+    lawyer = lawyer_service.get_lawyer_by_username(username)
     if not lawyer:
         raise NotFoundException("Lawyer not found")
     return lawyer
