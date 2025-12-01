@@ -3,7 +3,7 @@ from typing import Annotated, List
 from fastapi import APIRouter, Depends
 from sqlalchemy.exc import IntegrityError
 
-from app.core.deps import get_current_lawyer, get_lawyer_service
+from app.core.deps import get_current_lawyer, get_current_user, get_lawyer_service
 from app.core.exceptions import ConflictException, NotFoundException
 from app.models.lawyer import Lawyer
 from app.schemas.lawyer import (
