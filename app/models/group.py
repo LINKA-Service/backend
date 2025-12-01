@@ -41,7 +41,6 @@ class GroupMessage(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     content = Column(Text, nullable=False)
-    is_evidence = Column(Boolean, default=False)
     group_id = Column(
         Integer, ForeignKey("groups.id", ondelete="CASCADE"), nullable=False
     )
