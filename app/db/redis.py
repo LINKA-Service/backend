@@ -10,12 +10,21 @@ redis_client = None
 async def get_redis():
     global redis_client
     if redis_client is None:
-        redis_client = await redis.from_url(
-            settings.redis_url,
-            encoding="utf-8",
-            decode_responses=True,
-            ssl_cert_reqs=None,
-        )
+        if settings.redis_url.startswith("rediss://"):
+            import ssl
+            redis_client = await redis.from_url(
+                settings.redis_url,
+                encoding="utf-8",
+                decode_responses=True,
+                ssl=ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT),
+                ssl_cert_reqs=ssl.CERT_NONE,
+            )
+        else:
+            redis_client = await redis.from_url(
+                settings.redis_url,
+                encoding="utf-8",
+                decode_responses=True,
+            )
     return redis_client
 
 
