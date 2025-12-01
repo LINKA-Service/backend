@@ -7,7 +7,7 @@ from jose import jwt
 from sqlalchemy.exc import IntegrityError
 
 from app.core.config import settings
-from app.core.deps import get_current_lawyer
+from app.core.deps import get_current_lawyer, get_lawyer_service
 from app.core.exceptions import ConflictException, UnauthorizedException
 from app.db.redis import add_to_blacklist
 from app.models.lawyer import Lawyer
@@ -19,11 +19,9 @@ from app.schemas.lawyer import (
     StatusResponse,
 )
 from app.services.lawyer_service import LawyerService
-from sqlalchemy.orm import Session
 
 router = APIRouter()
 oauth2_scheme_lawyer = OAuth2PasswordBearer(tokenUrl="/api/lawyer-auth/login")
-
 
 
 @router.post("/register", response_model=LawyerResponse)
@@ -42,15 +40,14 @@ async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     lawyer_service: Annotated[LawyerService, Depends(get_lawyer_service)],
 ):
-    lawyer = lawyer_service.authenticate_lawyer(
-        form_data.username, form_data.password
-    )
+    lawyer = lawyer_service.authenticate_lawyer(form_data.username, form_data.password)
     if not lawyer:
         raise UnauthorizedException("Incorrect lawyername or password")
 
     access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
     access_token = lawyer_service.create_access_token(
-        data={"sub": str(lawyer.id), "type": "lawyer"}, expires_delta=access_token_expires
+        data={"sub": str(lawyer.id), "type": "lawyer"},
+        expires_delta=access_token_expires,
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
