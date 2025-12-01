@@ -33,8 +33,3 @@ app.include_router(websocket.router, prefix="/api/ws", tags=["websocket"])
 @app.get("/")
 async def root():
     return {"message": "LINKA Backend API"}
-
-
-@app.get("/health")
-async def health():
-    return {"status": "healthy"}

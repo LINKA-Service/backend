@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
+import bcrypt
 from jose import jwt
-from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -14,13 +14,20 @@ from app.schemas.user import UserCreate
 class AuthService:
     def __init__(self, db: Session):
         self.db = db
-        self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
-        return self.pwd_context.verify(plain_password, hashed_password)
+        try:
+            return bcrypt.checkpw(
+                plain_password.encode("utf-8"), hashed_password.encode("utf-8")
+            )
+        except ValueError:
+            return False
 
     def get_password_hash(self, password: str) -> str:
-        return self.pwd_context.hash(password)
+        pwd_bytes = password.encode("utf-8")
+        salt = bcrypt.gensalt()
+        hashed_password = bcrypt.hashpw(pwd_bytes, salt)
+        return hashed_password.decode("utf-8")
 
     def create_access_token(
         self, data: dict, expires_delta: Optional[timedelta] = None
@@ -48,7 +55,6 @@ class AuthService:
         hashed_password = self.get_password_hash(user.password)
         db_user = User(
             username=user.username,
-            email=user.email,
             hashed_password=hashed_password,
             display_name=user.display_name,
             bio=user.bio,

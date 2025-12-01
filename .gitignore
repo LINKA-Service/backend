@@ -29,6 +29,7 @@ MANIFEST
 *.spec
 
 # Testing and coverage
+tests/
 .pytest_cache/
 .coverage
 .coverage.*
