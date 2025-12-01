@@ -1,11 +1,11 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 from app.db.database import Base
-from app.models.user import user_groups
 from app.models.lawyer import lawyer_groups
+from app.models.user import user_groups
 
 
 class Group(Base):
@@ -29,7 +29,9 @@ class Group(Base):
 
     owner = relationship("User", back_populates="owned_groups")
     members = relationship("User", secondary=user_groups, back_populates="groups")
-    lawyer_members = relationship("Lawyer", secondary=lawyer_groups, back_populates="groups")
+    lawyer_members = relationship(
+        "Lawyer", secondary=lawyer_groups, back_populates="groups"
+    )
     messages = relationship(
         "GroupMessage", back_populates="group", cascade="all, delete-orphan"
     )

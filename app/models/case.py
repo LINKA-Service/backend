@@ -15,6 +15,12 @@ class CaseStatus(str, enum.Enum):
 
 
 class CaseType(str, enum.Enum):
+    DELIVERY = "delivery"  # 직거래 사기
+    INSURANCE = "insurance"  # 보험/서류 사기
+    DOOR_TO_DOOR = "door_to_door"  # 방문판매 사기
+    APPOINTMENT = "appointment"  # 사칭/위조 사기
+    RENTAL = "rental"  # 전세/월세 사기
+    ROMANCE = "romance"  # 로맨스 스캠
     SMISHING = "smishing"  # 스미싱 사기
     FALSE_ADVERTISING = "false_advertising"  # 허위 광고 사기
     SECONDHAND_FRAUD = "secondhand_fraud"  # 중고거래 사기

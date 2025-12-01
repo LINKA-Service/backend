@@ -5,16 +5,7 @@ from sqlalchemy import ARRAY, Column, DateTime, ForeignKey, Integer, String, Tab
 from sqlalchemy.orm import relationship
 
 from app.db.database import Base
-
-
-class LawyerSpecialization(str, enum.Enum):
-    SMISHING = "smishing"  # 스미싱 사기
-    FALSE_ADVERTISING = "false_advertising"  # 허위 광고 사기
-    SECONDHAND_FRAUD = "secondhand_fraud"  # 중고거래 사기
-    INVESTMENT_SCAM = "investment_scam"  # 투자 유인 사기
-    ACCOUNT_TAKEOVER = "account_takeover"  # 계정 도용 사기
-    OTHER = "other"  # 기타
-
+from app.models.case import CaseType, SQLEnum
 
 lawyer_groups = Table(
     "lawyer_groups",
@@ -33,7 +24,7 @@ class Lawyer(Base):
     lawyer_name = Column(String, nullable=True)
     bio = Column(String, nullable=True)
     avatar_url = Column(String, nullable=True)
-    specializations = Column(ARRAY(String), nullable=False, default=list)
+    specializations = Column(SQLEnum(CaseType), nullable=False, default=list)
     created_at = Column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
@@ -43,7 +34,9 @@ class Lawyer(Base):
         onupdate=lambda: datetime.now(timezone.utc),
     )
 
-    groups = relationship("Group", secondary=lawyer_groups, back_populates="lawyer_members")
+    groups = relationship(
+        "Group", secondary=lawyer_groups, back_populates="lawyer_members"
+    )
     group_messages = relationship(
         "GroupMessage", back_populates="lawyer_author", cascade="all, delete-orphan"
     )
@@ -62,6 +55,7 @@ class LawyerReview(Base):
     author_id = Column(
         Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
+    case_type = Column(SQLEnum(CaseType), nullable=False)
     review = Column(String, nullable=False)
     created_at = Column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
