@@ -9,7 +9,12 @@ from app.core.config import settings
 from app.core.exceptions import NotFoundException, UnauthorizedException
 from app.models.lawyer import Lawyer, LawyerReview
 from app.models.user import User
-from app.schemas.lawyer import LawyerCreate, LawyerReviewCreate, LawyernameUpdate, ProfileUpdate
+from app.schemas.lawyer import (
+    LawyerCreate,
+    LawyerNameUpdate,
+    LawyerReviewCreate,
+    ProfileUpdate,
+)
 
 
 class LawyerService:
@@ -44,12 +49,8 @@ class LawyerService:
         )
         return encoded_jwt
 
-    def authenticate_lawyer(
-        self, username: str, password: str
-    ) -> Optional[Lawyer]:
-        lawyer = (
-            self.db.query(Lawyer).filter(Lawyer.username == username).first()
-        )
+    def authenticate_lawyer(self, username: str, password: str) -> Optional[Lawyer]:
+        lawyer = self.db.query(Lawyer).filter(Lawyer.username == username).first()
         if not lawyer:
             return None
         if not self.verify_password(password, lawyer.hashed_password):
@@ -87,9 +88,7 @@ class LawyerService:
         return True
 
     def get_lawyer_by_username(self, username: str) -> Optional[Lawyer]:
-        return (
-            self.db.query(Lawyer).filter(Lawyer.username == username).first()
-        )
+        return self.db.query(Lawyer).filter(Lawyer.username == username).first()
 
     def get_lawyer_reviews(self, username: str) -> List[LawyerReview]:
         lawyer = self.get_lawyer_by_username(username)
@@ -97,7 +96,9 @@ class LawyerService:
             raise NotFoundException("Lawyer not found")
         return lawyer.reviews
 
-    def create_review(self, review: LawyerReviewCreate, username: str, current_user: User) -> LawyerReview:
+    def create_review(
+        self, review: LawyerReviewCreate, username: str, current_user: User
+    ) -> LawyerReview:
         lawyer = self.get_lawyer_by_username(username)
         if not lawyer:
             raise NotFoundException("Lawyer not found")
