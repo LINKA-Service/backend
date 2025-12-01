@@ -8,7 +8,7 @@ from app.core.exceptions import ConflictException, NotFoundException
 from app.models.lawyer import Lawyer
 from app.models.user import User
 from app.schemas.lawyer import (
-    LawyerNameUpdate,
+    LawyerIdUpdate,
     LawyerResponse,
     LawyerReviewCreate,
     LawyerReviewResponse,
@@ -33,42 +33,42 @@ async def update_me(
     return lawyer_service.update_profile(current_lawyer.id, profile_update)
 
 
-@router.get("/{username}", response_model=LawyerResponse)
-async def get_lawyer_by_username(
-    username: str,
+@router.get("/{lawyer_id}", response_model=LawyerResponse)
+async def get_lawyer_by_lawyer_id(
+    lawyer_id: str,
     lawyer_service: Annotated[LawyerService, Depends(get_lawyer_service)],
 ):
-    lawyer = lawyer_service.get_lawyer_by_username(username)
+    lawyer = lawyer_service.get_lawyer_by_lawyer_id(lawyer_id)
     if not lawyer:
         raise NotFoundException("Lawyer not found")
     return lawyer
 
 
-@router.post("/change-lawyername", response_model=LawyerResponse)
+@router.post("/change-lawyer-id", response_model=LawyerResponse)
 async def change_lawyername(
-    lawyername_update: LawyerNameUpdate,
+    lawyer_id_update: LawyerIdUpdate,
     current_lawyer: Annotated[Lawyer, Depends(get_current_lawyer)],
     lawyer_service: Annotated[LawyerService, Depends(get_lawyer_service)],
 ):
     try:
-        return lawyer_service.update_lawyername(current_lawyer.id, lawyername_update)
+        return lawyer_service.update_lawyer_id(current_lawyer.id, lawyer_id_update)
     except IntegrityError:
         raise ConflictException("Lawyername already registered")
 
 
-@router.get("/{lawyername}/reviews", response_model=List[LawyerReviewResponse])
+@router.get("/{lawyer_id}/reviews", response_model=List[LawyerReviewResponse])
 async def get_lawyer_reviews(
-    lawyername: str,
+    lawyer_id: int,
     lawyer_service: Annotated[LawyerService, Depends(get_lawyer_service)],
 ):
-    return lawyer_service.get_lawyer_reviews(lawyername)
+    return lawyer_service.get_lawyer_reviews(lawyer_id)
 
 
-@router.post("/reviews/{username}", response_model=LawyerReviewResponse)
+@router.post("/{lawyer_id}/reviews", response_model=LawyerReviewResponse)
 async def create_review(
     review: LawyerReviewCreate,
-    username: str,
+    lawyer_id: int,
     current_user: Annotated[User, Depends(get_current_user)],
     lawyer_service: Annotated[LawyerService, Depends(get_lawyer_service)],
 ):
-    return lawyer_service.create_review(review, username, current_user.id)
+    return lawyer_service.create_review(review, lawyer_id, current_user.id)

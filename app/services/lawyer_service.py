@@ -11,7 +11,7 @@ from app.models.lawyer import Lawyer, LawyerReview
 from app.models.user import User
 from app.schemas.lawyer import (
     LawyerCreate,
-    LawyerNameUpdate,
+    LawyerIdUpdate,
     LawyerReviewCreate,
     ProfileUpdate,
 )
@@ -21,7 +21,7 @@ class LawyerService:
     def __init__(self, db: Session):
         self.db = db
 
-    def verify_password(self, plain_password: str, hashed_password: str) -> bool:
+    def _verify_password(self, plain_password: str, hashed_password: str) -> bool:
         try:
             return bcrypt.checkpw(
                 plain_password.encode("utf-8"), hashed_password.encode("utf-8")
@@ -53,14 +53,14 @@ class LawyerService:
         lawyer = self.db.query(Lawyer).filter(Lawyer.username == username).first()
         if not lawyer:
             return None
-        if not self.verify_password(password, lawyer.hashed_password):
+        if not self._verify_password(password, lawyer.hashed_password):
             return None
         return lawyer
 
     def create_lawyer(self, lawyer: LawyerCreate) -> Lawyer:
         hashed_password = self.get_password_hash(lawyer.password)
         db_lawyer = Lawyer(
-            lawyername=lawyer.lawyername,
+            lawyer_id=lawyer.lawyer_id,
             hashed_password=hashed_password,
             display_name=lawyer.display_name,
             bio=lawyer.bio,
@@ -79,7 +79,7 @@ class LawyerService:
         if not lawyer:
             raise UnauthorizedException("Lawyer not found")
 
-        if not self.verify_password(current_password, lawyer.hashed_password):
+        if not self._verify_password(current_password, lawyer.hashed_password):
             raise UnauthorizedException("Current password is incorrect")
 
         lawyer.hashed_password = self.get_password_hash(new_password)
@@ -87,19 +87,19 @@ class LawyerService:
         self.db.commit()
         return True
 
-    def get_lawyer_by_username(self, username: str) -> Optional[Lawyer]:
-        return self.db.query(Lawyer).filter(Lawyer.username == username).first()
+    def get_lawyer_by_lawyer_id(self, lawyer_id: int) -> Optional[Lawyer]:
+        return self.db.query(Lawyer).filter(Lawyer.lawyer_id == lawyer_id).first()
 
-    def get_lawyer_reviews(self, username: str) -> List[LawyerReview]:
-        lawyer = self.get_lawyer_by_username(username)
+    def get_lawyer_reviews(self, lawyer_id: int) -> List[LawyerReview]:
+        lawyer = self.get_lawyer_by_lawyer_id(lawyer_id)
         if not lawyer:
             raise NotFoundException("Lawyer not found")
         return lawyer.reviews
 
     def create_review(
-        self, review: LawyerReviewCreate, username: str, current_user: User
+        self, review: LawyerReviewCreate, lawyer_id: int, current_user: User
     ) -> LawyerReview:
-        lawyer = self.get_lawyer_by_username(username)
+        lawyer = self.get_lawyer_by_lawyer_id(lawyer_id)
         if not lawyer:
             raise NotFoundException("Lawyer not found")
 
@@ -126,14 +126,15 @@ class LawyerService:
         self.db.refresh(db_lawyer)
         return db_lawyer
 
-    def update_lawyername(
-        self, lawyer_id: int, lawyer_name_update: LawyerNameUpdate
+    def update_lawyer_id(
+        self, lawyer_id: int, lawyer_id_update: LawyerIdUpdate
     ) -> Lawyer:
         db_lawyer = self.db.query(Lawyer).filter(Lawyer.id == lawyer_id).first()
         if not db_lawyer:
             raise NotFoundException("Lawyer not found")
 
-        setattr(db_lawyer, "lawyer_name", lawyer_name_update.lawyer_name)
+        setattr(db_lawyer, "lawyer_id", lawyer_id_update.lawyer_id)
+        setattr(db_lawyer, "lawyer_id_changed_at", datetime.now(timezone.utc))
 
         self.db.commit()
         self.db.refresh(db_lawyer)

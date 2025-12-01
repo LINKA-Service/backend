@@ -1,11 +1,14 @@
 from datetime import datetime
+from locale import str
 from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict
 
+from app.models import CaseType
+
 
 class LawyerBase(BaseModel):
-    username: str
+    lawyer_id: str
     lawyer_name: Optional[str] = None
     bio: Optional[str] = None
     avatar_url: Optional[str] = None
@@ -13,7 +16,6 @@ class LawyerBase(BaseModel):
 
 
 class LawyerCreate(LawyerBase):
-    username: str
     password: str
 
 
@@ -24,13 +26,13 @@ class ProfileUpdate(BaseModel):
     specializations: Optional[List[str]] = None
 
 
-class LawyerNameUpdate(BaseModel):
-    lawyer_name: str
+class LawyerIdUpdate(BaseModel):
+    lawyer_id: str
 
 
 class LawyerResponse(BaseModel):
     id: int
-    username: str
+    lawyer_id: str
     lawyer_name: Optional[str] = None
     bio: Optional[str] = None
     avatar_url: Optional[str] = None
@@ -56,13 +58,14 @@ class PasswordChange(BaseModel):
 
 
 class LawyerReviewCreate(BaseModel):
-    username: str
     review: str
 
 
 class LawyerReviewResponse(BaseModel):
     id: int
-    username: str
+    lawyer_id: str
+    author_id: str
+    case_type: CaseType
     review: str
     created_at: datetime
     updated_at: datetime
