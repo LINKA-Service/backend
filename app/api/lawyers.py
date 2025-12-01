@@ -32,12 +32,12 @@ async def update_me(
     return lawyer_service.update_profile(current_lawyer.id, profile_update)
 
 
-@router.get("/{lawyername}", response_model=LawyerResponse)
+@router.get("/{username}", response_model=LawyerResponse)
 async def get_lawyer_by_lawyername(
-    lawyername: str,
+    username: str,
     lawyer_service: Annotated[LawyerService, Depends(get_lawyer_service)],
 ):
-    lawyer = lawyer_service.get_lawyer_by_lawyername(lawyername)
+    lawyer = lawyer_service.get_lawyer_by_lawyername(username)
     if not lawyer:
         raise NotFoundException("Lawyer not found")
     return lawyer
@@ -65,9 +65,11 @@ async def get_lawyer_reviews(
     return lawyer_service.get_lawyer_reviews(lawyername)
 
 
-@router.post("/reviews", response_model=LawyerReviewResponse)
+@router.post("/reviews/{username}", response_model=LawyerReviewResponse)
 async def create_review(
     review: LawyerReviewCreate,
+    username: str,
+    current_user: Annotated[User, Depends(get_current_user)],
     lawyer_service: Annotated[LawyerService, Depends(get_lawyer_service)],
 ):
-    return lawyer_service.create_review(review)
+    return lawyer_service.create_review(review, username, current_user.id)

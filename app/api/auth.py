@@ -22,7 +22,7 @@ from app.services.auth_service import AuthService
 from app.services.user_service import UserService
 
 router = APIRouter()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
 
 
 @router.post("/register", response_model=UserResponse)

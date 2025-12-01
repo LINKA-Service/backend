@@ -28,10 +28,9 @@ class Lawyer(Base):
     __tablename__ = "lawyers"
 
     id = Column(Integer, primary_key=True, index=True)
-    lawyername = Column(String, unique=True, index=True, nullable=False)
-    lawyername_changed_at = Column(DateTime(timezone=True), nullable=True)
+    username = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
-    display_name = Column(String, nullable=True)
+    lawyer_name = Column(String, nullable=True)
     bio = Column(String, nullable=True)
     avatar_url = Column(String, nullable=True)
     specializations = Column(ARRAY(String), nullable=False, default=list)
@@ -57,8 +56,11 @@ class LawyerReview(Base):
     __tablename__ = "lawyer_reviews"
 
     id = Column(Integer, primary_key=True, index=True)
-    lawyername = Column(
-        String, ForeignKey("lawyers.lawyername", ondelete="CASCADE"), nullable=False, index=True
+    lawyer_id = Column(
+        Integer, ForeignKey("lawyers.id", ondelete="CASCADE"), nullable=False
+    )
+    author_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     review = Column(String, nullable=False)
     created_at = Column(
@@ -70,4 +72,5 @@ class LawyerReview(Base):
         onupdate=lambda: datetime.now(timezone.utc),
     )
 
+    author = relationship("User", back_populates="reviews")
     lawyer = relationship("Lawyer", back_populates="reviews")

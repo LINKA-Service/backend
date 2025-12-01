@@ -7,9 +7,10 @@ from jose import jwt
 from sqlalchemy.exc import IntegrityError
 
 from app.core.config import settings
-from app.core.deps import get_db
+from app.core.deps import get_current_lawyer
 from app.core.exceptions import ConflictException, UnauthorizedException
 from app.db.redis import add_to_blacklist
+from app.models.lawyer import Lawyer
 from app.schemas.lawyer import (
     LawyerCreate,
     LawyerResponse,
@@ -23,9 +24,6 @@ from sqlalchemy.orm import Session
 router = APIRouter()
 oauth2_scheme_lawyer = OAuth2PasswordBearer(tokenUrl="/api/lawyer-auth/login")
 
-
-def get_lawyer_service(db: Session = Depends(get_db)) -> LawyerService:
-    return LawyerService(db)
 
 
 @router.post("/register", response_model=LawyerResponse)
@@ -84,24 +82,11 @@ async def logout(
 @router.post("/change-password", response_model=StatusResponse)
 async def change_password(
     password_data: PasswordChange,
-    token: Annotated[str, Depends(oauth2_scheme_lawyer)],
+    current_lawyer: Annotated[Lawyer, Depends(get_current_lawyer)],
     lawyer_service: Annotated[LawyerService, Depends(get_lawyer_service)],
 ):
-    from jose import JWTError
-    from app.models.lawyer import Lawyer
-
-    try:
-        payload = jwt.decode(
-            token, settings.secret_key, algorithms=[settings.algorithm]
-        )
-        lawyer_id: int = payload.get("sub")
-        if lawyer_id is None or payload.get("type") != "lawyer":
-            raise UnauthorizedException("Invalid authentication credentials")
-    except JWTError:
-        raise UnauthorizedException("Invalid authentication credentials")
-
     lawyer_service.change_password(
-        lawyer_id=int(lawyer_id),
+        lawyer_id=current_lawyer.id,
         current_password=password_data.current_password,
         new_password=password_data.new_password,
     )

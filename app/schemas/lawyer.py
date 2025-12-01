@@ -5,32 +5,33 @@ from pydantic import BaseModel, ConfigDict
 
 
 class LawyerBase(BaseModel):
-    lawyername: str
-    display_name: Optional[str] = None
+    username: str
+    lawyer_name: Optional[str] = None
     bio: Optional[str] = None
     avatar_url: Optional[str] = None
     specializations: List[str] = []
 
 
 class LawyerCreate(LawyerBase):
+    username: str
     password: str
 
 
 class ProfileUpdate(BaseModel):
-    display_name: Optional[str] = None
+    lawyer_name: Optional[str] = None
     bio: Optional[str] = None
     avatar_url: Optional[str] = None
     specializations: Optional[List[str]] = None
 
 
-class LawyernameUpdate(BaseModel):
-    lawyername: str
+class LawyerNameUpdate(BaseModel):
+    lawyer_name: str
 
 
 class LawyerResponse(BaseModel):
     id: int
-    lawyername: str
-    display_name: Optional[str] = None
+    username: str
+    lawyer_name: Optional[str] = None
     bio: Optional[str] = None
     avatar_url: Optional[str] = None
     specializations: List[str]
@@ -55,13 +56,13 @@ class PasswordChange(BaseModel):
 
 
 class LawyerReviewCreate(BaseModel):
-    lawyername: str
+    username: str
     review: str
 
 
 class LawyerReviewResponse(BaseModel):
     id: int
-    lawyername: str
+    username: str
     review: str
     created_at: datetime
     updated_at: datetime

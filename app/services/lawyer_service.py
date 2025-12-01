@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.exceptions import NotFoundException, UnauthorizedException
 from app.models.lawyer import Lawyer, LawyerReview
+from app.models.user import User
 from app.schemas.lawyer import LawyerCreate, LawyerReviewCreate, LawyernameUpdate, ProfileUpdate
 
 
@@ -44,10 +45,10 @@ class LawyerService:
         return encoded_jwt
 
     def authenticate_lawyer(
-        self, lawyername: str, password: str
+        self, username: str, password: str
     ) -> Optional[Lawyer]:
         lawyer = (
-            self.db.query(Lawyer).filter(Lawyer.lawyername == lawyername).first()
+            self.db.query(Lawyer).filter(Lawyer.username == username).first()
         )
         if not lawyer:
             return None
@@ -85,24 +86,25 @@ class LawyerService:
         self.db.commit()
         return True
 
-    def get_lawyer_by_lawyername(self, lawyername: str) -> Optional[Lawyer]:
+    def get_lawyer_by_username(self, username: str) -> Optional[Lawyer]:
         return (
-            self.db.query(Lawyer).filter(Lawyer.lawyername == lawyername).first()
+            self.db.query(Lawyer).filter(Lawyer.username == username).first()
         )
 
-    def get_lawyer_reviews(self, lawyername: str) -> List[LawyerReview]:
-        lawyer = self.get_lawyer_by_lawyername(lawyername)
+    def get_lawyer_reviews(self, username: str) -> List[LawyerReview]:
+        lawyer = self.get_lawyer_by_username(username)
         if not lawyer:
             raise NotFoundException("Lawyer not found")
         return lawyer.reviews
 
-    def create_review(self, review: LawyerReviewCreate) -> LawyerReview:
-        lawyer = self.get_lawyer_by_lawyername(review.lawyername)
+    def create_review(self, review: LawyerReviewCreate, username: str, current_user: User) -> LawyerReview:
+        lawyer = self.get_lawyer_by_username(username)
         if not lawyer:
             raise NotFoundException("Lawyer not found")
 
         db_review = LawyerReview(
-            lawyername=review.lawyername,
+            lawyer_id=lawyer.id,
+            author_id=current_user.id,
             review=review.review,
         )
         self.db.add(db_review)
@@ -124,14 +126,13 @@ class LawyerService:
         return db_lawyer
 
     def update_lawyername(
-        self, lawyer_id: int, lawyername_update: LawyernameUpdate
+        self, lawyer_id: int, lawyer_name_update: LawyerNameUpdate
     ) -> Lawyer:
         db_lawyer = self.db.query(Lawyer).filter(Lawyer.id == lawyer_id).first()
         if not db_lawyer:
             raise NotFoundException("Lawyer not found")
 
-        setattr(db_lawyer, "lawyername", lawyername_update.lawyername)
-        setattr(db_lawyer, "lawyername_changed_at", datetime.now(timezone.utc))
+        setattr(db_lawyer, "lawyer_name", lawyer_name_update.lawyer_name)
 
         self.db.commit()
         self.db.refresh(db_lawyer)

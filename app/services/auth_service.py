@@ -76,7 +76,6 @@ class AuthService:
             raise UnauthorizedException("Current password is incorrect")
 
         user.hashed_password = self.get_password_hash(new_password)
-        user.password_changed_at = datetime.now(timezone.utc)
 
         self.db.commit()
         return True
