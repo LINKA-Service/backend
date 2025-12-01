@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import auth, groups, users, websocket
+from app.api import auth, groups, lawyer_auth, lawyers, users, websocket
 from app.db.redis import close_redis, get_redis
 
 
@@ -25,7 +25,9 @@ app.add_middleware(
 )
 
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(lawyer_auth.router, prefix="/api/lawyer-auth", tags=["lawyer-auth"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
+app.include_router(lawyers.router, prefix="/api/lawyers", tags=["lawyers"])
 app.include_router(groups.router, prefix="/api/groups", tags=["groups"])
 app.include_router(websocket.router, prefix="/api/ws", tags=["websocket"])
 

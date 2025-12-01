@@ -28,7 +28,7 @@ class GroupService:
         if not owner:
             raise NotFoundException("Owner user not found")
         db_group.members.append(owner)
-        self.db.commit()
+        self.db.commit()             
         self.db.refresh(db_group)
 
         return db_group

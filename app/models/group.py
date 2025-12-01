@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship
 
 from app.db.database import Base
 from app.models.user import user_groups
+from app.models.lawyer import lawyer_groups
 
 
 class Group(Base):
@@ -28,6 +29,7 @@ class Group(Base):
 
     owner = relationship("User", back_populates="owned_groups")
     members = relationship("User", secondary=user_groups, back_populates="groups")
+    lawyer_members = relationship("Lawyer", secondary=lawyer_groups, back_populates="groups")
     messages = relationship(
         "GroupMessage", back_populates="group", cascade="all, delete-orphan"
     )
@@ -45,7 +47,10 @@ class GroupMessage(Base):
         Integer, ForeignKey("groups.id", ondelete="CASCADE"), nullable=False
     )
     author_id = Column(
-        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=True
+    )
+    lawyer_author_id = Column(
+        Integer, ForeignKey("lawyers.id", ondelete="CASCADE"), nullable=True
     )
     created_at = Column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
@@ -58,3 +63,4 @@ class GroupMessage(Base):
 
     group = relationship("Group", back_populates="messages")
     author = relationship("User", back_populates="group_messages")
+    lawyer_author = relationship("Lawyer", back_populates="group_messages")
