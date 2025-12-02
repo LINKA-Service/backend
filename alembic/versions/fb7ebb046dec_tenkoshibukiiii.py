@@ -43,31 +43,21 @@ def upgrade():
     """)
 
     op.execute("""
-        ALTER TABLE lawyers
-        ADD COLUMN specializations_new text[]
-    """)
+        DO $$
+        DECLARE
+            lawyer_rec RECORD;
+            new_specs text[];
+        BEGIN
+            FOR lawyer_rec IN SELECT id, specializations FROM lawyers LOOP
+                SELECT array_agg(LOWER(elem::text))
+                INTO new_specs
+                FROM unnest(lawyer_rec.specializations) AS elem;
 
-    op.execute("""
-        UPDATE lawyers
-        SET specializations_new = (
-            SELECT array_agg(LOWER(elem::text))
-            FROM unnest(specializations::text[]) AS elem
-        )
-    """)
-
-    op.execute("""
-        ALTER TABLE lawyers DROP COLUMN specializations
-    """)
-
-    op.execute("""
-        ALTER TABLE lawyers
-        RENAME COLUMN specializations_new TO specializations
-    """)
-
-    op.execute("""
-        ALTER TABLE lawyers
-        ALTER COLUMN specializations TYPE casetype[]
-        USING specializations::casetype[]
+                UPDATE lawyers
+                SET specializations = new_specs::casetype[]
+                WHERE id = lawyer_rec.id;
+            END LOOP;
+        END $$;
     """)
 
     op.execute("""
