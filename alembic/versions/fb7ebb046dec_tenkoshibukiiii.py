@@ -7,6 +7,7 @@ Create Date: 2025-12-02 05:06:00.000000
 """
 
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 from alembic import op
 
@@ -47,22 +48,34 @@ def upgrade():
     """)
 
     op.execute("""
-        UPDATE lawyers l
-        SET specializations_new = (
-            SELECT array_agg(LOWER(s::text)::casetype)
-            FROM (
-                SELECT s FROM unnest(l.specializations) s
-            ) sub
-        )
+        CREATE OR REPLACE FUNCTION migrate_specializations()
+        RETURNS void AS $$
+        DECLARE
+            r RECORD;
+            spec_array text[];
+            spec_item text;
+            new_array casetype[];
+        BEGIN
+            FOR r IN SELECT id, specializations FROM lawyers LOOP
+                new_array := ARRAY[]::casetype[];
+
+                FOR spec_item IN SELECT unnest(r.specializations::text[]) LOOP
+                    new_array := array_append(new_array, LOWER(spec_item)::casetype);
+                END LOOP;
+
+                UPDATE lawyers SET specializations_new = new_array WHERE id = r.id;
+            END LOOP;
+        END;
+        $$ LANGUAGE plpgsql;
     """)
 
-    op.execute("""
-        ALTER TABLE lawyers DROP COLUMN specializations
-    """)
+    op.execute("SELECT migrate_specializations()")
+    op.execute("DROP FUNCTION migrate_specializations()")
 
-    op.execute("""
-        ALTER TABLE lawyers RENAME COLUMN specializations_new TO specializations
-    """)
+    op.execute("ALTER TABLE lawyers DROP COLUMN specializations")
+    op.execute(
+        "ALTER TABLE lawyers RENAME COLUMN specializations_new TO specializations"
+    )
 
     op.execute("""
         ALTER TABLE lawyer_reviews
