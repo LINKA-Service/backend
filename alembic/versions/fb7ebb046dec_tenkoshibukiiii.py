@@ -51,7 +51,7 @@ def upgrade():
         UPDATE lawyers
         SET specializations_new = ARRAY(
             SELECT LOWER(elem::text)::casetype
-            FROM unnest(specializations) AS elem
+            FROM unnest(specializations::text[]) AS elem
         )
     """)
 
