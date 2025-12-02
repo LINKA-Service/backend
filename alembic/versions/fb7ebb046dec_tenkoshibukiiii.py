@@ -43,12 +43,28 @@ def upgrade():
     """)
 
     op.execute("""
-        ALTER TABLE lawyers
-        ALTER COLUMN specializations TYPE casetype[]
-        USING (
-            SELECT array_agg(LOWER(elem::text)::casetype)
-            FROM (SELECT unnest(specializations::text[]) AS elem) sub
-        )
+        CREATE TEMP TABLE lawyer_specs_temp AS
+        SELECT
+            id,
+            array_agg(LOWER(elem::text)::casetype) as new_specs
+        FROM lawyers
+        CROSS JOIN LATERAL unnest(specializations::text[]) AS elem
+        GROUP BY id
+    """)
+
+    op.execute("""
+        ALTER TABLE lawyers DROP COLUMN specializations
+    """)
+
+    op.execute("""
+        ALTER TABLE lawyers ADD COLUMN specializations casetype[]
+    """)
+
+    op.execute("""
+        UPDATE lawyers
+        SET specializations = lawyer_specs_temp.new_specs
+        FROM lawyer_specs_temp
+        WHERE lawyers.id = lawyer_specs_temp.id
     """)
 
     op.execute("""
