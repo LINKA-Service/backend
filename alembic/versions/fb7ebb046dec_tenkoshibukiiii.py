@@ -43,21 +43,12 @@ def upgrade():
     """)
 
     op.execute("""
-        DO $$
-        DECLARE
-            lawyer_rec RECORD;
-            new_specs text[];
-        BEGIN
-            FOR lawyer_rec IN SELECT id, specializations FROM lawyers LOOP
-                SELECT array_agg(LOWER(elem::text))
-                INTO new_specs
-                FROM unnest(lawyer_rec.specializations) AS elem;
-
-                UPDATE lawyers
-                SET specializations = new_specs::casetype[]
-                WHERE id = lawyer_rec.id;
-            END LOOP;
-        END $$;
+        ALTER TABLE lawyers
+        ALTER COLUMN specializations TYPE casetype[]
+        USING (
+            SELECT array_agg(LOWER(elem::text)::casetype)
+            FROM (SELECT unnest(specializations::text[]) AS elem) sub
+        )
     """)
 
     op.execute("""
@@ -66,7 +57,7 @@ def upgrade():
         USING LOWER(case_type::text)::casetype
     """)
 
-    op.execute("DROP TYPE casetype_old")
+    op.execute("DROP TYPE casetype_old CASCADE")
 
 
 def downgrade():
