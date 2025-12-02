@@ -1,11 +1,19 @@
 """update casetype enum to lowercase
 
 Revision ID: fb7ebb046dec
+Revises: 615699808b75
+Create Date: 2025-12-02 05:06:00.000000
+
 """
 
 import sqlalchemy as sa
 
 from alembic import op
+
+revision = "fb7ebb046dec"
+down_revision = "615699808b75"
+branch_labels = None
+depends_on = None
 
 
 def upgrade():
