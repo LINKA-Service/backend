@@ -10,6 +10,7 @@ from sqlalchemy import (
     Text,
     TypeDecorator,
 )
+from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship
 
 from app.db.database import Base
