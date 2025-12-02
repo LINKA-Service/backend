@@ -1,24 +1,14 @@
-"""tenkoshibukiiii
+"""update casetype enum to lowercase
 
 Revision ID: fb7ebb046dec
-Revises: 615699808b75
-Create Date: 2025-12-02 14:02:57.893508
-
 """
-
-from typing import Sequence, Union
 
 import sqlalchemy as sa
 
 from alembic import op
 
-revision: str = "fb7ebb046dec"
-down_revision: Union[str, None] = "615699808b75"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
 
-
-def upgrade() -> None:
+def upgrade():
     op.execute("ALTER TYPE casetype RENAME TO casetype_old")
 
     op.execute("""
@@ -44,8 +34,23 @@ def upgrade() -> None:
         USING LOWER(case_type::text)::casetype
     """)
 
-    op.execute("DROP TYPE casetype_old")
+    op.execute("""
+        ALTER TABLE lawyers
+        ALTER COLUMN specializations TYPE casetype[]
+        USING (
+            SELECT ARRAY_AGG(LOWER(elem::text)::casetype)
+            FROM UNNEST(specializations) AS elem
+        )
+    """)
+
+    op.execute("""
+        ALTER TABLE lawyer_reviews
+        ALTER COLUMN case_type TYPE casetype
+        USING LOWER(case_type::text)::casetype
+    """)
+
+    op.execute("DROP TYPE casetype_old CASCADE")
 
 
-def downgrade() -> None:
+def downgrade():
     pass
