@@ -44,21 +44,23 @@ def upgrade():
 
     op.execute("""
         ALTER TABLE lawyers
-        ALTER COLUMN specializations TYPE text[]
-        USING specializations::text[]
+        ADD COLUMN specializations_new casetype[]
     """)
 
     op.execute("""
         UPDATE lawyers
-        SET specializations = ARRAY(
-            SELECT LOWER(unnest(specializations))
+        SET specializations_new = ARRAY(
+            SELECT LOWER(elem::text)::casetype
+            FROM unnest(specializations) AS elem
         )
     """)
 
     op.execute("""
-        ALTER TABLE lawyers
-        ALTER COLUMN specializations TYPE casetype[]
-        USING specializations::casetype[]
+        ALTER TABLE lawyers DROP COLUMN specializations
+    """)
+
+    op.execute("""
+        ALTER TABLE lawyers RENAME COLUMN specializations_new TO specializations
     """)
 
     op.execute("""
@@ -67,7 +69,7 @@ def upgrade():
         USING LOWER(case_type::text)::casetype
     """)
 
-    op.execute("DROP TYPE casetype_old CASCADE")
+    op.execute("DROP TYPE casetype_old")
 
 
 def downgrade():
