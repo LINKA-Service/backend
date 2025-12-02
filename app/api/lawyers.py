@@ -1,6 +1,6 @@
-from typing import Annotated, List
+from typing import Annotated, List, Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.exc import IntegrityError
 
 from app.core.deps import get_current_lawyer, get_current_user, get_lawyer_service
@@ -17,6 +17,16 @@ from app.schemas.lawyer import (
 from app.services.lawyer_service import LawyerService
 
 router = APIRouter()
+
+
+@router.get("/search", response_model=List[LawyerResponse])
+async def search_lawyers(
+    lawyer_service: Annotated[LawyerService, Depends(get_lawyer_service)],
+    specialization: Optional[str] = Query(None, description="Filter lawyers by specialization (case type)"),
+):
+    if specialization:
+        return lawyer_service.search_lawyers_by_specialization(specialization)
+    return []
 
 
 @router.get("/me", response_model=LawyerResponse)

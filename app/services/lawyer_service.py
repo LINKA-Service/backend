@@ -139,3 +139,12 @@ class LawyerService:
         self.db.commit()
         self.db.refresh(db_lawyer)
         return db_lawyer
+
+    def search_lawyers_by_specialization(
+        self, specialization: str
+    ) -> List[Lawyer]:
+        return (
+            self.db.query(Lawyer)
+            .filter(Lawyer.specializations.contains([specialization]))
+            .all()
+        )
