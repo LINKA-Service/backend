@@ -45,12 +45,13 @@ def upgrade():
     op.execute("""
         ALTER TABLE lawyers
         ALTER COLUMN specializations TYPE text[]
+        USING specializations::text[]
     """)
 
     op.execute("""
         UPDATE lawyers
         SET specializations = ARRAY(
-            SELECT LOWER(unnest(specializations)::text)
+            SELECT LOWER(unnest(specializations))
         )
     """)
 
