@@ -44,13 +44,13 @@ def upgrade():
 
     op.execute("""
         ALTER TABLE lawyers
-        ADD COLUMN specializations_new casetype[]
+        ADD COLUMN specializations_new text[]
     """)
 
     op.execute("""
         UPDATE lawyers
-        SET specializations_new = ARRAY(
-            SELECT LOWER(elem::text)::casetype
+        SET specializations_new = (
+            SELECT array_agg(LOWER(elem::text))
             FROM unnest(specializations::text[]) AS elem
         )
     """)
@@ -60,7 +60,14 @@ def upgrade():
     """)
 
     op.execute("""
-        ALTER TABLE lawyers RENAME COLUMN specializations_new TO specializations
+        ALTER TABLE lawyers
+        RENAME COLUMN specializations_new TO specializations
+    """)
+
+    op.execute("""
+        ALTER TABLE lawyers
+        ALTER COLUMN specializations TYPE casetype[]
+        USING specializations::casetype[]
     """)
 
     op.execute("""
